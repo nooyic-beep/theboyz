@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>韩娱嫂子模拟器 · THE BOYZ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Sans+SC:wght@300;400;500&display=swap');
+
+:root {
+–black: #0a0a0f;
+–deep: #111118;
+–surface: #161622;
+–card: #1c1c2e;
+–border: rgba(255,255,255,0.07);
+–gold: #c9a96e;
+–gold-light: #e8c98a;
+–rose: #e8909a;
+–rose-dim: rgba(232,144,154,0.15);
+–text: #e8e4de;
+–muted: rgba(232,228,222,0.45);
+–danger: #e05a6a;
+–safe: #6abf8a;
+–info: #7ab3d4;
+–warn: #d4a76a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+background: var(–black);
+color: var(–text);
+font-family: ‘Noto Sans SC’, sans-serif;
+font-weight: 300;
+min-height: 100vh;
+overflow-x: hidden;
+position: relative;
+}
+
+/* Atmospheric background */
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
+background:
+radial-gradient(ellipse 60% 40% at 20% 20%, rgba(201,169,110,0.04) 0%, transparent 70%),
+radial-gradient(ellipse 50% 60% at 80% 80%, rgba(232,144,154,0.05) 0%, transparent 70%),
+radial-gradient(ellipse 80% 80% at 50% 50%, rgba(122,179,212,0.02) 0%, transparent 100%);
+pointer-events: none;
+z-index: 0;
+}
+
+/* Noise grain overlay */
+body::after {
+content: ‘’;
+position: fixed;
+inset: 0;
+background-image: url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 256 256’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘noise’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=‘0.9’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23noise)’ opacity=‘0.03’/%3E%3C/svg%3E”);
+background-size: 200px;
+pointer-events: none;
+z-index: 1;
+opacity: 0.6;
+}
+
+#app { position: relative; z-index: 2; }
+
+/* ===== SCREENS ===== */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ===== TITLE SCREEN ===== */
+#screen-title {
+align-items: center;
+justify-content: center;
+text-align: center;
+padding: 40px 20px;
+position: relative;
+overflow: hidden;
+}
+
+.title-bg {
+position: absolute;
+inset: 0;
+background:
+linear-gradient(160deg, rgba(201,169,110,0.06) 0%, transparent 50%),
+linear-gradient(340deg, rgba(232,144,154,0.06) 0%, transparent 50%);
+}
+
+.title-lines {
+position: absolute;
+inset: 0;
+overflow: hidden;
+}
+.title-lines::before, .title-lines::after {
+content: ‘’;
+position: absolute;
+background: var(–gold);
+opacity: 0.12;
+}
+.title-lines::before {
+width: 1px;
+top: 0; bottom: 0;
+left: 50%;
+animation: lineFade 4s ease-in-out infinite alternate;
+}
+.title-lines::after {
+height: 1px;
+left: 0; right: 0;
+top: 45%;
+animation: lineFade 4s ease-in-out 2s infinite alternate;
+}
+
+@keyframes lineFade { from { opacity: 0.05; } to { opacity: 0.18; } }
+
+.title-content { position: relative; z-index: 1; }
+
+.title-badge {
+display: inline-block;
+border: 1px solid var(–gold);
+color: var(–gold);
+font-size: 10px;
+letter-spacing: 4px;
+text-transform: uppercase;
+padding: 6px 18px;
+margin-bottom: 32px;
+opacity: 0;
+animation: fadeUp 0.8s 0.3s forwards;
+}
+
+.title-main {
+font-family: ‘Playfair Display’, serif;
+font-size: clamp(36px, 8vw, 72px);
+font-weight: 700;
+line-height: 1.1;
+color: var(–text);
+margin-bottom: 8px;
+opacity: 0;
+animation: fadeUp 0.8s 0.5s forwards;
+}
+
+.title-sub {
+font-family: ‘Noto Serif SC’, serif;
+font-size: clamp(14px, 3vw, 20px);
+color: var(–gold);
+letter-spacing: 6px;
+margin-bottom: 16px;
+opacity: 0;
+animation: fadeUp 0.8s 0.7s forwards;
+}
+
+.title-desc {
+font-size: 13px;
+color: var(–muted);
+letter-spacing: 2px;
+margin-bottom: 60px;
+opacity: 0;
+animation: fadeUp 0.8s 0.9s forwards;
+}
+
+.title-cover {
+width: 260px;
+height: 340px;
+margin: 0 auto 48px;
+position: relative;
+opacity: 0;
+animation: fadeUp 0.8s 1.1s forwards;
+}
+
+.cover-art {
+width: 100%;
+height: 100%;
+background: linear-gradient(145deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #1a0535 100%);
+border: 1px solid rgba(201,169,110,0.3);
+position: relative;
+overflow: hidden;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.cover-art::before {
+content: ‘’;
+position: absolute;
+inset: 0;
+background:
+radial-gradient(circle at 30% 70%, rgba(232,144,154,0.3) 0%, transparent 50%),
+radial-gradient(circle at 70% 30%, rgba(201,169,110,0.2) 0%, transparent 50%);
+}
+
+.cover-art::after {
+content: ‘✦’;
+position: absolute;
+font-size: 120px;
+color: rgba(201,169,110,0.08);
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+animation: rotateStar 20s linear infinite;
+}
+
+@keyframes rotateStar { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+.cover-city {
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+height: 120px;
+background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+display: flex;
+align-items: flex-end;
+padding: 16px;
+}
+
+.cover-text {
+text-align: left;
+z-index: 1;
+}
+
+.cover-text h3 {
+font-family: ‘Playfair Display’, serif;
+font-size: 18px;
+color: var(–gold-light);
+letter-spacing: 2px;
+}
+
+.cover-text p {
+font-size: 10px;
+color: rgba(232,228,222,0.6);
+letter-spacing: 3px;
+text-transform: uppercase;
+}
+
+.cover-lights {
+position: absolute;
+top: 20%;
+width: 100%;
+display: flex;
+justify-content: space-around;
+z-index: 1;
+}
+
+.light-dot {
+width: 3px;
+height: 3px;
+border-radius: 50%;
+background: var(–gold-light);
+animation: lightPulse 2s ease-in-out infinite;
+}
+
+.light-dot:nth-child(2) { animation-delay: 0.5s; background: var(–rose); }
+.light-dot:nth-child(3) { animation-delay: 1s; background: var(–info); }
+.light-dot:nth-child(4) { animation-delay: 1.5s; }
+.light-dot:nth-child(5) { animation-delay: 0.3s; background: var(–rose); }
+
+@keyframes lightPulse {
+0%, 100% { opacity: 0.3; transform: scale(1); }
+50% { opacity: 1; transform: scale(1.5); }
+}
+
+.btn-primary {
+display: inline-flex;
+align-items: center;
+gap: 10px;
+background: transparent;
+border: 1px solid var(–gold);
+color: var(–gold);
+font-family: ‘Noto Sans SC’, sans-serif;
+font-size: 13px;
+letter-spacing: 3px;
+padding: 14px 36px;
+cursor: pointer;
+transition: all 0.3s ease;
+position: relative;
+overflow: hidden;
+opacity: 0;
+animation: fadeUp 0.8s 1.3s forwards;
+}
+
+.btn-primary::before {
+content: ‘’;
+position: absolute;
+inset: 0;
+background: var(–gold);
+transform: translateX(-100%);
+transition: transform 0.3s ease;
+}
+
+.btn-primary:hover::before { transform: translateX(0); }
+.btn-primary:hover { color: var(–black); }
+.btn-primary span { position: relative; z-index: 1; }
+
+@keyframes fadeUp {
+from { opacity: 0; transform: translateY(20px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== CHARACTER CREATION ===== */
+#screen-create {
+padding: 40px 20px 80px;
+max-width: 680px;
+margin: 0 auto;
+}
+
+.section-header {
+text-align: center;
+margin-bottom: 40px;
+}
+
+.section-tag {
+font-size: 10px;
+letter-spacing: 4px;
+color: var(–gold);
+text-transform: uppercase;
+margin-bottom: 12px;
+}
+
+.section-title {
+font-family: ‘Playfair Display’, serif;
+font-size: clamp(24px, 5vw, 36px);
+color: var(–text);
+margin-bottom: 8px;
+}
+
+.section-divider {
+width: 60px;
+height: 1px;
+background: linear-gradient(90deg, transparent, var(–gold), transparent);
+margin: 12px auto;
+}
+
+/* Form fields */
+.field-group {
+margin-bottom: 28px;
+}
+
+.field-label {
+font-size: 11px;
+letter-spacing: 3px;
+color: var(–gold);
+text-transform: uppercase;
+margin-bottom: 10px;
+display: block;
+}
+
+.field-input {
+width: 100%;
+background: var(–surface);
+border: 1px solid var(–border);
+color: var(–text);
+font-family: ‘Noto Sans SC’, sans-serif;
+font-size: 14px;
+padding: 12px 16px;
+outline: none;
+transition: border-color 0.2s;
+}
+
+.field-input:focus { border-color: rgba(201,169,110,0.5); }
+.field-input::placeholder { color: var(–muted); }
+
+/* Identity cards */
+.identity-grid {
+display: grid;
+gap: 10px;
+}
+
+.identity-card {
+background: var(–surface);
+border: 1px solid var(–border);
+padding: 14px 16px;
+cursor: pointer;
+transition: all 0.25s ease;
+display: flex;
+gap: 12px;
+align-items: flex-start;
+}
+
+.identity-card:hover {
+border-color: rgba(201,169,110,0.4);
+background: var(–card);
+}
+
+.identity-card.selected {
+border-color: var(–gold);
+background: rgba(201,169,110,0.08);
+}
+
+.identity-letter {
+font-family: ‘Playfair Display’, serif;
+font-size: 20px;
+color: var(–gold);
+min-width: 28px;
+line-height: 1.2;
+}
+
+.identity-info h4 {
+font-size: 13px;
+font-weight: 500;
+color: var(–text);
+margin-bottom: 4px;
+}
+
+.identity-info p {
+font-size: 11px;
+color: var(–muted);
+line-height: 1.6;
+}
+
+/* Member selection */
+.member-grid {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 10px;
+}
+
+.member-card {
+background: var(–surface);
+border: 1px solid var(–border);
+padding: 16px;
+cursor: pointer;
+transition: all 0.25s ease;
+text-align: center;
+}
+
+.member-card:hover { border-color: rgba(232,144,154,0.4); background: var(–card); }
+.member-card.selected { border-color: var(–rose); background: rgba(232,144,154,0.08); }
+
+.member-avatar {
+width: 48px;
+height: 48px;
+border-radius: 50%;
+margin: 0 auto 10px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 20px;
+position: relative;
+}
+
+.member-name-kr { font-size: 13px; font-weight: 500; color: var(–text); }
+.member-name-en { font-size: 10px; color: var(–rose); letter-spacing: 2px; margin-bottom: 6px; }
+.member-type { font-size: 10px; color: var(–muted); letter-spacing: 1px; }
+
+/* Pace selection */
+.pace-options {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 10px;
+}
+
+.pace-card {
+background: var(–surface);
+border: 1px solid var(–border);
+padding: 14px 10px;
+cursor: pointer;
+text-align: center;
+transition: all 0.25s ease;
+}
+
+.pace-card:hover { border-color: rgba(122,179,212,0.4); }
+.pace-card.selected { border-color: var(–info); background: rgba(122,179,212,0.08); }
+
+.pace-icon { font-size: 22px; margin-bottom: 8px; }
+.pace-name { font-size: 12px; color: var(–text); margin-bottom: 4px; }
+.pace-desc { font-size: 10px; color: var(–muted); }
+
+.btn-confirm {
+width: 100%;
+background: var(–surface);
+border: 1px solid var(–gold);
+color: var(–gold);
+font-family: ‘Noto Sans SC’, sans-serif;
+font-size: 13px;
+letter-spacing: 3px;
+padding: 16px;
+cursor: pointer;
+transition: all 0.3s ease;
+margin-top: 32px;
+}
+
+.btn-confirm:hover { background: var(–gold); color: var(–black); }
+
+/* ===== GAME SCREEN ===== */
+#screen-game {
+flex-direction: column;
+padding: 0;
+}
+
+/* Stats bar */
+.stats-bar {
+background: rgba(10,10,15,0.95);
+border-bottom: 1px solid var(–border);
+padding: 12px 16px;
+display: flex;
+gap: 12px;
+overflow-x: auto;
+flex-shrink: 0;
+backdrop-filter: blur(10px);
+position: sticky;
+top: 0;
+z-index: 100;
+scrollbar-width: none;
+}
+
+.stats-bar::-webkit-scrollbar { display: none; }
+
+.stat-item {
+display: flex;
+flex-direction: column;
+align-items: center;
+min-width: 58px;
+gap: 4px;
+}
+
+.stat-label {
+font-size: 9px;
+letter-spacing: 1px;
+white-space: nowrap;
+}
+
+.stat-bar-outer {
+width: 100%;
+height: 3px;
+background: rgba(255,255,255,0.08);
+position: relative;
+}
+
+.stat-bar-inner {
+height: 100%;
+transition: width 0.6s ease;
+}
+
+.stat-value {
+font-size: 10px;
+font-weight: 500;
+}
+
+.stat-love .stat-label { color: var(–rose); }
+.stat-love .stat-bar-inner { background: var(–rose); }
+.stat-love .stat-value { color: var(–rose); }
+
+.stat-mood .stat-label { color: var(–info); }
+.stat-mood .stat-bar-inner { background: var(–info); }
+.stat-mood .stat-value { color: var(–info); }
+
+.stat-money .stat-label { color: var(–gold); }
+.stat-money .stat-value { color: var(–gold); }
+
+.stat-secret .stat-label { color: #a0c4a0; }
+.stat-secret .stat-bar-inner { background: var(–safe); }
+.stat-secret .stat-value { color: var(–safe); }
+
+.stat-company .stat-label { color: var(–warn); }
+.stat-company .stat-bar-inner { background: var(–warn); }
+.stat-company .stat-value { color: var(–warn); }
+
+.stat-career .stat-label { color: var(–danger); }
+.stat-career .stat-bar-inner { background: var(–danger); }
+.stat-career .stat-value { color: var(–danger); }
+
+.stat-pop .stat-label { color: #b89fd4; }
+.stat-pop .stat-bar-inner { background: #b89fd4; }
+.stat-pop .stat-value { color: #b89fd4; }
+
+/* Week indicator */
+.week-bar {
+background: var(–deep);
+border-bottom: 1px solid var(–border);
+padding: 8px 16px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+flex-shrink: 0;
+}
+
+.week-info {
+font-size: 11px;
+color: var(–muted);
+letter-spacing: 2px;
+}
+
+.week-stage {
+font-size: 10px;
+color: var(–rose);
+letter-spacing: 2px;
+border: 1px solid rgba(232,144,154,0.3);
+padding: 3px 10px;
+}
+
+/* Story area */
+.story-area {
+flex: 1;
+overflow-y: auto;
+padding: 24px 16px;
+display: flex;
+flex-direction: column;
+gap: 0;
+scrollbar-width: thin;
+scrollbar-color: var(–border) transparent;
+}
+
+.story-block {
+margin-bottom: 24px;
+animation: storyFade 0.6s ease forwards;
+opacity: 0;
+}
+
+@keyframes storyFade {
+from { opacity: 0; transform: translateY(10px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.story-text {
+font-size: 14px;
+line-height: 2;
+color: rgba(232,228,222,0.88);
+letter-spacing: 0.5px;
+}
+
+.story-text .highlight {
+color: var(–text);
+font-weight: 400;
+}
+
+.story-text .male-lead {
+color: var(–rose);
+}
+
+.story-text .atmosphere {
+color: var(–muted);
+font-style: italic;
+}
+
+/* Dialogue bubble */
+.dialogue-block {
+margin: 16px 0;
+display: flex;
+gap: 12px;
+align-items: flex-start;
+}
+
+.dialogue-avatar {
+width: 36px;
+height: 36px;
+border-radius: 50%;
+background: linear-gradient(135deg, var(–rose), var(–gold));
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 14px;
+flex-shrink: 0;
+border: 1px solid rgba(232,144,154,0.3);
+}
+
+.dialogue-bubble {
+background: var(–surface);
+border: 1px solid var(–border);
+border-left: 2px solid var(–rose);
+padding: 10px 14px;
+flex: 1;
+}
+
+.dialogue-name {
+font-size: 10px;
+color: var(–rose);
+letter-spacing: 2px;
+margin-bottom: 6px;
+}
+
+.dialogue-text {
+font-size: 13px;
+line-height: 1.8;
+color: var(–text);
+}
+
+/* Player dialogue */
+.dialogue-block.player {
+flex-direction: row-reverse;
+}
+
+.dialogue-block.player .dialogue-bubble {
+border-left: none;
+border-right: 2px solid var(–gold);
+}
+
+.dialogue-block.player .dialogue-name { color: var(–gold); text-align: right; }
+
+/* Event card */
+.event-card {
+background: var(–card);
+border: 1px solid var(–border);
+border-top: 2px solid var(–warn);
+padding: 16px;
+margin: 20px 0;
+}
+
+.event-tag {
+font-size: 9px;
+letter-spacing: 3px;
+color: var(–warn);
+text-transform: uppercase;
+margin-bottom: 8px;
+}
+
+.event-title { font-size: 14px; color: var(–text); margin-bottom: 8px; font-weight: 500; }
+.event-desc { font-size: 12px; color: var(–muted); line-height: 1.7; }
+
+/* Affection change notification */
+.stat-change {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+background: rgba(10,10,15,0.9);
+border: 1px solid;
+padding: 4px 12px;
+font-size: 11px;
+margin: 4px 4px;
+animation: popIn 0.3s ease;
+}
+
+.stat-change.up { border-color: rgba(106,191,138,0.5); color: var(–safe); }
+.stat-change.down { border-color: rgba(224,90,106,0.5); color: var(–danger); }
+
+@keyframes popIn {
+from { opacity: 0; transform: scale(0.9); }
+to { opacity: 1; transform: scale(1); }
+}
+
+/* Choices area */
+.choices-area {
+background: rgba(10,10,15,0.97);
+border-top: 1px solid var(–border);
+padding: 16px;
+flex-shrink: 0;
+backdrop-filter: blur(10px);
+}
+
+.choices-label {
+font-size: 10px;
+letter-spacing: 3px;
+color: var(–muted);
+text-transform: uppercase;
+margin-bottom: 12px;
+text-align: center;
+}
+
+.choices-grid {
+display: flex;
+flex-direction: column;
+gap: 8px;
+}
+
+.choice-btn {
+background: var(–surface);
+border: 1px solid var(–border);
+color: var(–text);
+font-family: ‘Noto Sans SC’, sans-serif;
+font-size: 12px;
+padding: 12px 16px;
+cursor: pointer;
+text-align: left;
+transition: all 0.2s ease;
+display: flex;
+align-items: center;
+gap: 12px;
+line-height: 1.6;
+}
+
+.choice-btn:hover {
+border-color: rgba(201,169,110,0.4);
+background: var(–card);
+}
+
+.choice-letter {
+font-family: ‘Playfair Display’, serif;
+font-size: 16px;
+color: var(–gold);
+min-width: 20px;
+}
+
+.custom-input-wrap {
+display: flex;
+gap: 8px;
+margin-top: 8px;
+}
+
+.custom-input {
+flex: 1;
+background: var(–surface);
+border: 1px solid var(–border);
+color: var(–text);
+font-family: ‘Noto Sans SC’, sans-serif;
+font-size: 12px;
+padding: 10px 14px;
+outline: none;
+transition: border-color 0.2s;
+}
+
+.custom-input:focus { border-color: rgba(201,169,110,0.4); }
+.custom-input::placeholder { color: var(–muted); }
+
+.custom-send {
+background: transparent;
+border: 1px solid var(–gold);
+color: var(–gold);
+padding: 10px 16px;
+cursor: pointer;
+font-family: ‘Noto Sans SC’, sans-serif;
+font-size: 12px;
+transition: all 0.2s ease;
+}
+
+.custom-send:hover { background: var(–gold); color: var(–black); }
+
+/* Loading indicator */
+.loading-dots {
+display: flex;
+gap: 6px;
+align-items: center;
+padding: 16px 0;
+justify-content: center;
+}
+
+.loading-dots span {
+width: 6px;
+height: 6px;
+border-radius: 50%;
+background: var(–gold);
+opacity: 0.3;
+animation: dotPulse 1.2s ease-in-out infinite;
+}
+
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotPulse {
+0%, 100% { opacity: 0.2; transform: scale(0.8); }
+50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Character card */
+.char-card {
+background: var(–card);
+border: 1px solid rgba(232,144,154,0.2);
+padding: 20px;
+margin: 20px 0;
+display: flex;
+gap: 16px;
+align-items: flex-start;
+}
+
+.char-avatar-large {
+width: 64px;
+height: 64px;
+border-radius: 50%;
+border: 1px solid rgba(232,144,154,0.4);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 28px;
+flex-shrink: 0;
+}
+
+.char-info h3 {
+font-family: ‘Playfair Display’, serif;
+font-size: 18px;
+color: var(–rose);
+margin-bottom: 4px;
+}
+
+.char-info .char-type {
+font-size: 10px;
+color: var(–muted);
+letter-spacing: 2px;
+margin-bottom: 8px;
+}
+
+.char-traits {
+display: flex;
+flex-wrap: wrap;
+gap: 6px;
+}
+
+.trait-tag {
+font-size: 10px;
+border: 1px solid rgba(232,144,154,0.3);
+color: var(–rose);
+padding: 2px 8px;
+letter-spacing: 1px;
+}
+
+/* Relationship stage indicator */
+.relationship-bar {
+background: var(–card);
+border: 1px solid var(–border);
+padding: 12px 16px;
+margin: 16px 0;
+display: flex;
+align-items: center;
+justify-content: space-between;
+}
+
+.rel-stages {
+display: flex;
+gap: 0;
+flex: 1;
+margin: 0 12px;
+}
+
+.rel-stage {
+flex: 1;
+height: 3px;
+background: rgba(255,255,255,0.08);
+position: relative;
+transition: background 0.5s ease;
+}
+
+.rel-stage.active { background: var(–rose); }
+.rel-stage::after {
+content: ‘’;
+position: absolute;
+right: 0;
+top: -3px;
+width: 1px;
+height: 9px;
+background: rgba(255,255,255,0.15);
+}
+
+.rel-label { font-size: 10px; color: var(–muted); letter-spacing: 1px; white-space: nowrap; }
+.rel-current { font-size: 10px; color: var(–rose); letter-spacing: 1px; }
+
+/* ===== API KEY SETUP SCREEN ===== */
+#screen-setup {
+align-items: center;
+justify-content: center;
+padding: 40px 20px;
+}
+
+.setup-box {
+width: 100%;
+max-width: 480px;
+background: var(–card);
+border: 1px solid rgba(201,169,110,0.2);
+padding: 40px 32px;
+}
+
+.setup-icon { font-size: 40px; text-align: center; margin-bottom: 24px; }
+
+.setup-title {
+font-family: ‘Playfair Display’, serif;
+font-size: 24px;
+color: var(–text);
+text-align: center;
+margin-bottom: 8px;
+}
+
+.setup-desc {
+font-size: 12px;
+color: var(–muted);
+text-align: center;
+line-height: 1.8;
+margin-bottom: 32px;
+}
+
+.setup-link {
+color: var(–gold);
+text-decoration: none;
+}
+
+.setup-link:hover { text-decoration: underline; }
+
+.setup-note {
+font-size: 11px;
+color: var(–muted);
+background: rgba(201,169,110,0.05);
+border: 1px solid rgba(201,169,110,0.15);
+padding: 10px 14px;
+margin-top: 16px;
+line-height: 1.7;
+}
+
+/* Ending screen */
+#screen-ending {
+align-items: center;
+justify-content: center;
+padding: 40px 20px;
+text-align: center;
+}
+
+.ending-type {
+font-size: 10px;
+letter-spacing: 4px;
+margin-bottom: 24px;
+text-transform: uppercase;
+}
+
+.ending-type.he { color: var(–safe); border: 1px solid rgba(106,191,138,0.4); padding: 6px 20px; }
+.ending-type.be { color: var(–danger); border: 1px solid rgba(224,90,106,0.4); padding: 6px 20px; }
+.ending-type.oe { color: var(–info); border: 1px solid rgba(122,179,212,0.4); padding: 6px 20px; }
+.ending-type.se { color: var(–gold); border: 1px solid rgba(201,169,110,0.4); padding: 6px 20px; }
+
+.ending-title {
+font-family: ‘Playfair Display’, serif;
+font-size: 32px;
+color: var(–text);
+margin-bottom: 20px;
+}
+
+.ending-text {
+font-size: 14px;
+line-height: 2;
+color: rgba(232,228,222,0.75);
+max-width: 480px;
+margin: 0 auto 40px;
+}
+
+.btn-restart {
+background: transparent;
+border: 1px solid var(–gold);
+color: var(–gold);
+font-family: ‘Noto Sans SC’, sans-serif;
+font-size: 12px;
+letter-spacing: 3px;
+padding: 12px 32px;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.btn-restart:hover { background: var(–gold); color: var(–black); }
+
+/* Fade transitions */
+.fade-out {
+animation: fadeOut 0.5s ease forwards;
+}
+
+@keyframes fadeOut {
+to { opacity: 0; }
+}
+
+/* Scrollbar */
+.story-area::-webkit-scrollbar { width: 4px; }
+.story-area::-webkit-scrollbar-track { background: transparent; }
+.story-area::-webkit-scrollbar-thumb { background: var(–border); }
+
+/* Mobile tweaks */
+@media (max-width: 400px) {
+.member-grid { grid-template-columns: repeat(2, 1fr); }
+.pace-options { grid-template-columns: 1fr; }
+}
+</style>
+
+</head>
+<body>
+<div id="app">
+
+<!-- ========== TITLE SCREEN ========== -->
+
+<div id="screen-title" class="screen active">
+  <div class="title-bg"></div>
+  <div class="title-lines"></div>
+  <div class="title-content">
+    <div class="title-badge"><span>✦ PARALLEL WORLD ✦</span></div>
+    <h1 class="title-main">韩娱嫂子模拟器</h1>
+    <div class="title-sub">THE BOYZ 定向版</div>
+    <p class="title-desc">平行世界 · 真实感情 · 七分甜三分虐</p>
+
+```
+<div class="title-cover">
+  <div class="cover-art">
+    <div class="cover-lights">
+      <div class="light-dot"></div>
+      <div class="light-dot"></div>
+      <div class="light-dot"></div>
+      <div class="light-dot"></div>
+      <div class="light-dot"></div>
+    </div>
+    <div class="cover-city">
+      <div class="cover-text">
+        <h3>THE BOYZ</h3>
+        <p>SEOUL · PARALLEL UNIVERSE</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-bottom: 12px; font-size: 11px; color: var(--muted); letter-spacing: 1px; opacity: 0; animation: fadeUp 0.8s 1.2s forwards;">
+  本游戏内容为虚构创作，与现实艺人无关
+</div>
+
+<button class="btn-primary" onclick="goToSetup()">
+  <span>开始游戏</span>
+  <span>→</span>
+</button>
+```
+
+  </div>
+</div>
+
+<!-- ========== API KEY SETUP ========== -->
+
+<div id="screen-setup" class="screen">
+  <div class="setup-box">
+    <div class="setup-icon">🔑</div>
+    <h2 class="setup-title">连接 AI 引擎</h2>
+    <p class="setup-desc">
+      本游戏由 DeepSeek AI 驱动，需要输入你的 API Key。<br>
+      Key 仅在本地使用，不会被存储或上传。<br><br>
+      前往 <a href="https://platform.deepseek.com/api_keys" target="_blank" class="setup-link">platform.deepseek.com</a> 获取。
+    </p>
+    <div class="field-group">
+      <label class="field-label">DeepSeek API Key</label>
+      <input type="password" class="field-input" id="api-key-input" placeholder="sk-...">
+    </div>
+    <button class="btn-confirm" onclick="saveApiKey()">确认并继续 →</button>
+    <div class="setup-note">
+      ⚠️ 所有对话内容均通过你的 API Key 直接与 DeepSeek 服务器通信，网页本身不记录任何信息。
+    </div>
+  </div>
+</div>
+
+<!-- ========== CHARACTER CREATION ========== -->
+
+<div id="screen-create" class="screen">
+  <div class="section-header">
+    <div class="section-tag">STEP 01</div>
+    <h2 class="section-title">角色创建</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <!-- Player info -->
+
+  <div class="field-group">
+    <label class="field-label">你的姓名</label>
+    <input type="text" class="field-input" id="player-name" placeholder="请输入你的名字">
+  </div>
+
+  <div class="field-group">
+    <label class="field-label">你的年龄</label>
+    <input type="number" class="field-input" id="player-age" placeholder="22" min="18" max="35">
+  </div>
+
+  <!-- Identity -->
+
+  <div class="field-group">
+    <label class="field-label">你的身份起源</label>
+    <div class="identity-grid" id="identity-grid">
+      <div class="identity-card" onclick="selectIdentity(this, 'A', '留学生', '在首尔读书，与娱乐圈无关。初遇自然真实感强，但签证学业都是压力源。')">
+        <div class="identity-letter">A</div>
+        <div class="identity-info">
+          <h4>留学生</h4>
+          <p>在首尔读书，与娱乐圈无关。生活轨迹自然，真实感强。</p>
+        </div>
+      </div>
+      <div class="identity-card" onclick="selectIdentity(this, 'B', 'THE B / 海外粉丝', '曾默默关注THE BOYZ很久。了解组合历史，但身份极其敏感。')">
+        <div class="identity-letter">B</div>
+        <div class="identity-info">
+          <h4>THE B / 海外粉丝</h4>
+          <p>曾默默关注 THE BOYZ。了解男主习惯，但身份一旦曝光会被放大审判。</p>
+        </div>
+      </div>
+      <div class="identity-card" onclick="selectIdentity(this, 'C', '娱乐公司实习生', '在经纪公司实习。接触机会多，但公司明令禁止与艺人私下发展。')">
+        <div class="identity-letter">C</div>
+        <div class="identity-info">
+          <h4>娱乐公司实习生</h4>
+          <p>在经纪公司、宣传组工作。接触机会多，能看见男主台下状态。</p>
+        </div>
+      </div>
+      <div class="identity-card" onclick="selectIdentity(this, 'D', '音乐节目工作人员', '在打歌节目、颁奖礼工作。能频繁遇见男主，但项目结束容易断联。')">
+        <div class="identity-letter">D</div>
+        <div class="identity-info">
+          <h4>音乐节目工作人员</h4>
+          <p>在打歌节目或综艺棚工作。接触机会频繁，但职场流言风险高。</p>
+        </div>
+      </div>
+      <div class="identity-card" onclick="selectIdentity(this, 'E', '妆造师 / 发型助理', '参与舞台妆造、杂志拍摄。近距离接触，专业边界强。')">
+        <div class="identity-letter">E</div>
+        <div class="identity-info">
+          <h4>妆造师 / 发型助理</h4>
+          <p>参与舞台妆造、MV 拍摄。近距离接触，有独立职业价值。</p>
+        </div>
+      </div>
+      <div class="identity-card" onclick="selectIdentity(this, 'F', '翻译 / 海外商务助理', '负责采访翻译、海外商务。进入男主工作半径，同时被多方审视。')">
+        <div class="identity-letter">F</div>
+        <div class="identity-info">
+          <h4>翻译 / 海外商务助理</h4>
+          <p>负责采访翻译、品牌活动。能进入男主工作半径。</p>
+        </div>
+      </div>
+      <div class="identity-card" onclick="selectIdentity(this, 'G', '咖啡店 / 便利店打工', '在首尔生活，为生计奔波。初遇自然，阶层落差明显。')">
+        <div class="identity-letter">G</div>
+        <div class="identity-info">
+          <h4>咖啡店 / 便利店打工</h4>
+          <p>普通人，在首尔生活。初遇自然，真实感强烈。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Member selection -->
+
+  <div class="field-group">
+    <label class="field-label">选择攻略对象</label>
+    <div class="member-grid" id="member-grid">
+      <div class="member-card" onclick="selectMember(this, 'Juyeon', '李柱延', 'Juyeon', '温柔不可测型', '🎭')">
+        <div class="member-avatar" style="background: linear-gradient(135deg, #2d1b69, #553a99);">🎭</div>
+        <div class="member-name-kr">李柱延</div>
+        <div class="member-name-en">JUYEON</div>
+        <div class="member-type">温柔不可测型</div>
+      </div>
+      <div class="member-card" onclick="selectMember(this, 'Hyunjae', '李贤在', 'Hyunjae', '甜心伪善型', '🌸')">
+        <div class="member-avatar" style="background: linear-gradient(135deg, #1a3a2a, #2d6b4a);">🌸</div>
+        <div class="member-name-kr">李贤在</div>
+        <div class="member-name-en">HYUNJAE</div>
+        <div class="member-type">甜心伪善型</div>
+      </div>
+      <div class="member-card" onclick="selectMember(this, 'Younghoon', '金泳勋', 'Younghoon', '温柔危险型', '🌊')">
+        <div class="member-avatar" style="background: linear-gradient(135deg, #0d2744, #1a4a7a);">🌊</div>
+        <div class="member-name-kr">金泳勋</div>
+        <div class="member-name-en">YOUNGHOON</div>
+        <div class="member-type">温柔危险型</div>
+      </div>
+      <div class="member-card" onclick="selectMember(this, 'Sunwoo', '金善旴', 'Sunwoo', '直球反差型', '⚡')">
+        <div class="member-avatar" style="background: linear-gradient(135deg, #3d1a00, #7a3800);">⚡</div>
+        <div class="member-name-kr">金善旴</div>
+        <div class="member-name-en">SUNWOO</div>
+        <div class="member-type">直球反差型</div>
+      </div>
+      <div class="member-card" onclick="selectMember(this, 'Eric', '孙英宰', 'Eric', '年下冲动型', '🔥')">
+        <div class="member-avatar" style="background: linear-gradient(135deg, #3d0d0d, #7a1a1a);">🔥</div>
+        <div class="member-name-kr">孙英宰</div>
+        <div class="member-name-en">ERIC</div>
+        <div class="member-type">年下冲动型</div>
+      </div>
+      <div class="member-card" onclick="selectMember(this, 'Q', '池昌民', 'Q', '黏人执着型', '🎪')">
+        <div class="member-avatar" style="background: linear-gradient(135deg, #2d0d3d, #5c1a7a);">🎪</div>
+        <div class="member-name-kr">池昌民</div>
+        <div class="member-name-en">Q</div>
+        <div class="member-type">黏人执着型</div>
+      </div>
+      <div class="member-card" onclick="selectMember(this, 'Jacob', '裴俊英', 'Jacob', '冷静深水型', '🌙')">
+        <div class="member-avatar" style="background: linear-gradient(135deg, #0d1a2d, #1a3a5a);">🌙</div>
+        <div class="member-name-kr">裴俊英</div>
+        <div class="member-name-en">JACOB</div>
+        <div class="member-type">冷静深水型</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pace -->
+
+  <div class="field-group">
+    <label class="field-label">剧情节奏</label>
+    <div class="pace-options">
+      <div class="pace-card" onclick="selectPace(this, 'slow', '慢热型', '细腻日常，情感铺垫充分')">
+        <div class="pace-icon">🌒</div>
+        <div class="pace-name">慢热</div>
+        <div class="pace-desc">细腻日常，情感铺垫充分</div>
+      </div>
+      <div class="pace-card" onclick="selectPace(this, 'normal', '均衡型', '甜与虐交替，节奏适中')">
+        <div class="pace-icon">🌗</div>
+        <div class="pace-name">均衡</div>
+        <div class="pace-desc">甜与虐交替，节奏适中</div>
+      </div>
+      <div class="pace-card" onclick="selectPace(this, 'fast', '戏剧型', '事件频发，冲突激烈')">
+        <div class="pace-icon">🌕</div>
+        <div class="pace-name">戏剧</div>
+        <div class="pace-desc">事件频发，冲突激烈</div>
+      </div>
+    </div>
+  </div>
+
+<button class="btn-confirm" onclick="startGame()">确定，进入剧情 →</button>
+
+</div>
+
+<!-- ========== GAME SCREEN ========== -->
+
+<div id="screen-game" class="screen">
+  <!-- Stats bar -->
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-item stat-love">
+      <div class="stat-label">好感度</div>
+      <div class="stat-bar-outer"><div class="stat-bar-inner" id="bar-love" style="width:8%"></div></div>
+      <div class="stat-value" id="val-love">8</div>
+    </div>
+    <div class="stat-item stat-pop">
+      <div class="stat-label">人气值</div>
+      <div class="stat-bar-outer"><div class="stat-bar-inner" id="bar-pop" style="width:0%"></div></div>
+      <div class="stat-value" id="val-pop">0</div>
+    </div>
+    <div class="stat-item stat-mood">
+      <div class="stat-label">心情值</div>
+      <div class="stat-bar-outer"><div class="stat-bar-inner" id="bar-mood" style="width:72%"></div></div>
+      <div class="stat-value" id="val-mood">72</div>
+    </div>
+    <div class="stat-item stat-money">
+      <div class="stat-label">金钱</div>
+      <div class="stat-value" id="val-money">₩2300</div>
+    </div>
+    <div class="stat-item stat-secret">
+      <div class="stat-label">保密度</div>
+      <div class="stat-bar-outer"><div class="stat-bar-inner" id="bar-secret" style="width:100%"></div></div>
+      <div class="stat-value" id="val-secret">100</div>
+    </div>
+    <div class="stat-item stat-company">
+      <div class="stat-label">公司警觉</div>
+      <div class="stat-bar-outer"><div class="stat-bar-inner" id="bar-company" style="width:18%"></div></div>
+      <div class="stat-value" id="val-company">18</div>
+    </div>
+    <div class="stat-item stat-career">
+      <div class="stat-label">事业压力</div>
+      <div class="stat-bar-outer"><div class="stat-bar-inner" id="bar-career" style="width:67%"></div></div>
+      <div class="stat-value" id="val-career">67</div>
+    </div>
+  </div>
+
+  <!-- Week bar -->
+
+  <div class="week-bar">
+    <span class="week-info" id="week-display">第 1 周</span>
+    <span class="week-stage" id="stage-display">陌生人</span>
+  </div>
+
+  <!-- Story area -->
+
+  <div class="story-area" id="story-area"></div>
+
+  <!-- Choices area -->
+
+  <div class="choices-area">
+    <div class="choices-label">— 选择你的行动 —</div>
+    <div class="choices-grid" id="choices-grid"></div>
+    <div class="custom-input-wrap">
+      <input type="text" class="custom-input" id="custom-action" placeholder="D. 自由行动：输入你的选择...">
+      <button class="custom-send" onclick="sendCustomAction()">发送</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ENDING SCREEN ========== -->
+
+<div id="screen-ending" class="screen">
+  <div id="ending-type-badge" class="ending-type he">HE · 隐秘而稳定的爱</div>
+  <h2 class="ending-title" id="ending-title">你们的故事</h2>
+  <p class="ending-text" id="ending-text"></p>
+  <button class="btn-restart" onclick="restartGame()">重新开始</button>
+</div>
+
+</div>
+
+<script>
+// ===== STATE =====
+const state = {
+  apiKey: '',
+  playerName: '',
+  playerAge: '',
+  identity: null,
+  member: null,
+  pace: null,
+  week: 1,
+  stage: '陌生人',
+  stats: {
+    love: 8, pop: 0, mood: 72,
+    money: 2300, secret: 100,
+    company: 18, career: 67
+  },
+  conversationHistory: [],
+  currentChoices: [],
+};
+
+const STAGES = ['陌生人', '有过一面之缘', '普通认识', '微妙暧昧', '互有好感', '暗恋期', '表白临界', '确认关系'];
+
+const MEMBER_PROFILES = {
+  Juyeon: { name: '李柱延（Juyeon）', emoji: '🎭', type: '温柔不可测型', traits: ['温柔', '稳定表象', '内里不可读', '恐怖吸引力'], desc: '他几乎不生气，对谁都温和礼貌，但你永远不知道他在想什么。他不会明确推进关系，却会让你一步步陷进去。' },
+  Hyunjae: { name: '李贤在（Hyunjae）', emoji: '🌸', type: '甜心伪善型', traits: ['表面温柔', '内里冷感', '偶尔极深情'], desc: '他对所有人都很好，但这种好是均匀分配的，不带偏爱。一旦动情，是那种毫无预警、失去控制的深。' },
+  Younghoon: { name: '金泳勋（Younghoon）', emoji: '🌊', type: '温柔危险型', traits: ['温和', '成熟', '隐性掌控', '安全感与危险感并存'], desc: '他总是看起来很温和，但比任何人都更清楚人与人之间的距离。他习惯主导节奏，你甚至意识不到自己已经被他牵着走。' },
+  Sunwoo: { name: '金善旴（Sunwoo）', emoji: '⚡', type: '直球反差型', traits: ['直球', '嘴甜', '少年感', '情绪反差强烈'], desc: '他很会靠近人，故意逗你，看起来完全不怕越界。可察觉自己动心后，反而变得敏感，情绪来得快，吃醋明显。' },
+  Eric: { name: '孙英宰（Eric）', emoji: '🔥', type: '年下冲动型', traits: ['年下', '热烈', '冲动', '真心藏不住'], desc: '他喜欢一个人的时候非常明显，情绪都写在脸上，根本不会伪装。他像一场热烈又危险的夏天。' },
+  Q: { name: '池昌民（Q）', emoji: '🎪', type: '黏人执着型', traits: ['黏人', '敏感', '依赖感强', '执着型'], desc: '他很需要回应，会反复确认你是不是还在意他。越喜欢，越容易患得患失。' },
+  Jacob: { name: '裴俊英（Jacob）', emoji: '🌙', type: '冷静深水型', traits: ['冷静', '温和', '观察型', '深情内敛'], desc: '他很少把情绪摆在表面，但你会慢慢发现他其实一直都在看着你。他的感情像深水，表面平静，但很难真正抽离。' },
+};
+
+// ===== NAVIGATION =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goToSetup() {
+  showScreen('screen-setup');
+}
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key.startsWith('sk-')) {
+    alert('请输入有效的 DeepSeek API Key（以 sk- 开头）');
+    return;
+  }
+  state.apiKey = key;
+  showScreen('screen-create');
+}
+
+// ===== CHARACTER CREATION =====
+function selectIdentity(el, letter, name, desc) {
+  document.querySelectorAll('.identity-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.identity = { letter, name, desc };
+}
+
+function selectMember(el, key, nameKr, nameEn, type, emoji) {
+  document.querySelectorAll('.member-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.member = MEMBER_PROFILES[key] || { name: `${nameKr}（${nameEn}）`, emoji, type, traits: [], desc: '' };
+  state.memberKey = key;
+}
+
+function selectPace(el, key, name, desc) {
+  document.querySelectorAll('.pace-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.pace = { key, name, desc };
+}
+
+function startGame() {
+  state.playerName = document.getElementById('player-name').value.trim() || '你';
+  state.playerAge = document.getElementById('player-age').value || '22';
+
+  if (!state.identity) { alert('请选择你的身份起源'); return; }
+  if (!state.member) { alert('请选择你的攻略对象'); return; }
+  if (!state.pace) { alert('请选择剧情节奏'); return; }
+
+  showScreen('screen-game');
+  updateStats();
+  
+  // Show character card then start story
+  showCharacterCard();
+  setTimeout(() => initStory(), 800);
+}
+
+// ===== GAME UI =====
+function updateStats() {
+  const s = state.stats;
+  document.getElementById('val-love').textContent = s.love;
+  document.getElementById('val-pop').textContent = s.pop;
+  document.getElementById('val-mood').textContent = s.mood;
+  document.getElementById('val-money').textContent = `₩${s.money}`;
+  document.getElementById('val-secret').textContent = s.secret;
+  document.getElementById('val-company').textContent = s.company;
+  document.getElementById('val-career').textContent = s.career;
+
+  document.getElementById('bar-love').style.width = s.love + '%';
+  document.getElementById('bar-pop').style.width = s.pop + '%';
+  document.getElementById('bar-mood').style.width = s.mood + '%';
+  document.getElementById('bar-secret').style.width = s.secret + '%';
+  document.getElementById('bar-company').style.width = s.company + '%';
+  document.getElementById('bar-career').style.width = s.career + '%';
+
+  const stageIdx = Math.min(Math.floor(s.love / 13), STAGES.length - 1);
+  state.stage = STAGES[stageIdx];
+  document.getElementById('week-display').textContent = `第 ${state.week} 周`;
+  document.getElementById('stage-display').textContent = state.stage;
+}
+
+function addStoryBlock(html) {
+  const area = document.getElementById('story-area');
+  const block = document.createElement('div');
+  block.className = 'story-block';
+  block.innerHTML = html;
+  area.appendChild(block);
+  setTimeout(() => { area.scrollTop = area.scrollHeight; }, 100);
+  return block;
+}
+
+function showCharacterCard() {
+  const m = state.member;
+  const traitsHTML = m.traits.map(t => `<span class="trait-tag">${t}</span>`).join('');
+  addStoryBlock(`
+    <div class="char-card">
+      <div class="char-avatar-large">${m.emoji}</div>
+      <div class="char-info">
+        <h3>${m.name}</h3>
+        <div class="char-type">${m.type}</div>
+        <div class="char-traits">${traitsHTML}</div>
+      </div>
+    </div>
+    <div class="relationship-bar">
+      <span class="rel-label">关系进度</span>
+      <div class="rel-stages" id="rel-stages">
+        ${STAGES.map((s,i) => `<div class="rel-stage${i===0?' active':''}"></div>`).join('')}
+      </div>
+      <span class="rel-current" id="rel-current">${state.stage}</span>
+    </div>
+  `);
+}
+
+function showLoading() {
+  const area = document.getElementById('story-area');
+  const block = document.createElement('div');
+  block.className = 'story-block loading-block';
+  block.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+  area.appendChild(block);
+  area.scrollTop = area.scrollHeight;
+  return block;
+}
+
+function removeLoading() {
+  const loadingBlocks = document.querySelectorAll('.loading-block');
+  loadingBlocks.forEach(b => b.remove());
+}
+
+function setChoices(choices) {
+  const grid = document.getElementById('choices-grid');
+  grid.innerHTML = '';
+  state.currentChoices = choices;
+  choices.forEach((c, i) => {
+    const letters = ['A', 'B', 'C'];
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="choice-letter">${letters[i] || String.fromCharCode(65+i)}</span><span>${c}</span>`;
+    btn.onclick = () => makeChoice(c);
+    grid.appendChild(btn);
+  });
+}
+
+function sendCustomAction() {
+  const input = document.getElementById('custom-action');
+  const action = input.value.trim();
+  if (!action) return;
+  input.value = '';
+  makeChoice(action);
+}
+
+// ===== AI STORY ENGINE =====
+function buildSystemPrompt() {
+  const m = state.member;
+  const s = state.stats;
+  return `你是一个韩娱向恋爱文字游戏的DM（地下城主），负责叙事推进、NPC扮演、事件生成与属性结算。
+
+【游戏设定】
+本游戏为THE BOYZ同人向平行世界文游。所有剧情、感情线、人物行为均属于虚构创作，不代表现实艺人本人。
+
+【核心基调】
+- 写实向韩娱恋爱模拟，非爽文
+- 强调"普通人闯入韩娱世界"的真实感、落差感、语言隔阂、公司制度、粉圈压力
+- 允许BE，玩家选择会真实影响感情线、事业线、舆论线与结局
+- 整体氛围：七分甜三分虐
+- 男主不是无条件恋爱脑，他有事业、组合、粉丝、公司、舆论压力
+- 玩家不是天选之女，关系推进必须合理、有代价、有风险
+- 叙事信息有限性：玩家只能知道第一视角所见所闻
+
+【玩家信息】
+姓名：${state.playerName}，年龄：${state.playerAge}岁
+身份：${state.identity.name} - ${state.identity.desc}
+
+【攻略对象】
+${m.name}
+人设类型：${m.type}
+性格特征：${m.traits.join('、')}
+人设方向：${m.desc}
+
+【当前属性】
+好感度：${s.love}/100 | 人气值：${s.pop}/100 | 心情值：${s.mood}/100
+金钱：₩${s.money} | 恋情保密度：${s.secret}/100 | 公司警觉度：${s.company}/100 | 事业压力：${s.career}/100
+
+【当前关系阶段】${state.stage}（第${state.week}周）
+
+【剧情节奏】${state.pace.name}（${state.pace.desc}）
+
+【成员姓名格式规则】凡出现THE BOYZ成员姓名，必须使用"中文名（英文艺名）"格式。
+
+【回复格式要求】
+每次回复必须包含以下JSON格式（用```json和```包裹）：
+\`\`\`json
+{
+  "narrative": "剧情叙述文本（200-400字，包含场景描写、人物行为、情感细节）",
+  "dialogue": [{"speaker": "说话人名", "text": "台词", "isPlayer": false}],
+  "statChanges": {"love": 0, "pop": 0, "mood": 0, "money": 0, "secret": 0, "company": 0, "career": 0},
+  "choices": ["选项A文本", "选项B文本", "选项C文本"],
+  "event": null,
+  "weekAdvance": false,
+  "ending": null
+}
+\`\`\`
+注意：
+- narrative必须使用第一视角，从"你"的角度描述
+- statChanges每个值在-15到+15之间
+- choices提供3个符合情境的选项
+- event可以是null或{"title":"事件名", "desc":"事件描述"}格式
+- ending可以是null或{"type":"HE/OE/BE/SE", "title":"结局名", "text":"结局文本"}格式
+- 当love≥91或week≥36时考虑触发结局
+- 叙述要有文学质感，情感要克制但有张力，禁止过度玛丽苏`;
+}
+
+async function callAPI(userMessage) {
+  const messages = [...state.conversationHistory, { role: 'user', content: userMessage }];
+  
+  const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${state.apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      max_tokens: 1500,
+      messages: [
+        { role: 'system', content: buildSystemPrompt() },
+        ...messages,
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API Error ${response.status}`);
+  }
+
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content || '';
+  
+  state.conversationHistory.push({ role: 'user', content: userMessage });
+  state.conversationHistory.push({ role: 'assistant', content: text });
+  
+  // Keep history manageable
+  if (state.conversationHistory.length > 20) {
+    state.conversationHistory = state.conversationHistory.slice(-16);
+  }
+
+  return parseAIResponse(text);
+}
+
+function parseAIResponse(text) {
+  try {
+    const match = text.match(/```json\s*([\s\S]*?)\s*```/);
+    if (match) return JSON.parse(match[1]);
+  } catch(e) {}
+  
+  // Fallback
+  return {
+    narrative: text.replace(/```[\s\S]*?```/g, '').trim(),
+    dialogue: [],
+    statChanges: {},
+    choices: ['继续观察情况', '主动开口说话', '悄然离开'],
+    event: null,
+    weekAdvance: false,
+    ending: null,
+  };
+}
+
+function applyStatChanges(changes) {
+  const labels = { love: '好感度', pop: '人气值', mood: '心情值', secret: '保密度', company: '公司警觉', career: '事业压力' };
+  const notifHTML = [];
+  
+  Object.entries(changes || {}).forEach(([key, val]) => {
+    if (!val || key === 'money') return;
+    if (state.stats[key] !== undefined) {
+      state.stats[key] = Math.max(0, Math.min(100, state.stats[key] + val));
+      if (val !== 0) {
+        const sign = val > 0 ? '+' : '';
+        const cls = val > 0 ? 'up' : 'down';
+        notifHTML.push(`<span class="stat-change ${cls}">${labels[key] || key} ${sign}${val}</span>`);
+      }
+    }
+  });
+
+  if (changes?.money) {
+    state.stats.money = Math.max(0, state.stats.money + changes.money);
+  }
+
+  return notifHTML.join('');
+}
+
+function renderResponse(parsed) {
+  // Event card
+  if (parsed.event) {
+    addStoryBlock(`
+      <div class="event-card">
+        <div class="event-tag">⚡ 事件触发</div>
+        <div class="event-title">${parsed.event.title}</div>
+        <div class="event-desc">${parsed.event.desc}</div>
+      </div>
+    `);
+  }
+
+  // Narrative
+  if (parsed.narrative) {
+    addStoryBlock(`<div class="story-text">${parsed.narrative}</div>`);
+  }
+
+  // Dialogues
+  if (parsed.dialogue && parsed.dialogue.length) {
+    parsed.dialogue.forEach(d => {
+      const isPlayer = d.isPlayer || d.speaker === state.playerName;
+      const m = state.member;
+      const avatar = isPlayer ? '👤' : m.emoji;
+      const name = isPlayer ? state.playerName : m.name.split('（')[0];
+      addStoryBlock(`
+        <div class="dialogue-block ${isPlayer ? 'player' : ''}">
+          <div class="dialogue-avatar">${avatar}</div>
+          <div class="dialogue-bubble">
+            <div class="dialogue-name">${name}</div>
+            <div class="dialogue-text">${d.text}</div>
+          </div>
+        </div>
+      `);
+    });
+  }
+
+  // Stat changes
+  const statNotifs = applyStatChanges(parsed.statChanges);
+  if (statNotifs) {
+    addStoryBlock(`<div style="margin: 8px 0;">${statNotifs}</div>`);
+  }
+
+  // Advance week
+  if (parsed.weekAdvance) {
+    state.week++;
+  }
+
+  updateStats();
+
+  // Check ending
+  if (parsed.ending) {
+    setTimeout(() => showEnding(parsed.ending), 2000);
+    return;
+  }
+
+  // Set choices
+  if (parsed.choices && parsed.choices.length) {
+    setChoices(parsed.choices);
+  }
+}
+
+async function initStory() {
+  const m = state.member;
+  const loadBlock = showLoading();
+  
+  try {
+    const parsed = await callAPI(`游戏开始。玩家信息：姓名${state.playerName}，年龄${state.playerAge}，身份是${state.identity.name}（${state.identity.desc}）。攻略对象：${m.name}。请开始第一回合的剧情，场景可以是首尔某处与${m.name}的初遇，带有韩娱氛围的具体场景。注意展示人物性格，设置自然的初遇情境，提供3个行动选项。`);
+    removeLoading();
+    renderResponse(parsed);
+  } catch(e) {
+    removeLoading();
+    addStoryBlock(`<div class="story-text" style="color:var(--danger)">⚠️ 连接失败：${e.message}<br><br>请检查 API Key 是否正确，或稍后重试。</div>`);
+  }
+}
+
+async function makeChoice(choice) {
+  // Disable choices during loading
+  document.getElementById('choices-grid').innerHTML = '';
+  document.getElementById('custom-action').disabled = true;
+  
+  // Show player's choice
+  addStoryBlock(`
+    <div class="dialogue-block player">
+      <div class="dialogue-avatar">👤</div>
+      <div class="dialogue-bubble">
+        <div class="dialogue-name" style="text-align:right">${state.playerName}</div>
+        <div class="dialogue-text" style="color:var(--gold-light)">${choice}</div>
+      </div>
+    </div>
+  `);
+
+  const loadBlock = showLoading();
+
+  try {
+    const parsed = await callAPI(`玩家选择：${choice}\n\n请继续推进剧情，根据选择发展场景，结算属性变化，并提供下一步的3个行动选项。注意当前是第${state.week}周，关系阶段是${state.stage}，好感度${state.stats.love}。`);
+    removeLoading();
+    document.getElementById('custom-action').disabled = false;
+    renderResponse(parsed);
+  } catch(e) {
+    removeLoading();
+    document.getElementById('custom-action').disabled = false;
+    addStoryBlock(`<div class="story-text" style="color:var(--danger)">⚠️ 剧情推进失败：${e.message}</div>`);
+    setChoices(['重试上一个选择', '等待片刻', '继续当前场景']);
+  }
+}
+
+function showEnding(ending) {
+  const badge = document.getElementById('ending-type-badge');
+  const endingTexts = {
+    HE: 'HE · 隐秘而稳定的爱',
+    OE: 'OE · 未公开的等待',
+    BE: 'BE · 分离',
+    SE: 'SE · 公开恋爱',
+  };
+  badge.textContent = endingTexts[ending.type] || ending.type;
+  badge.className = 'ending-type ' + (ending.type || 'he').toLowerCase();
+  document.getElementById('ending-title').textContent = ending.title || '故事的终章';
+  document.getElementById('ending-text').textContent = ending.text || '';
+  showScreen('screen-ending');
+}
+
+function restartGame() {
+  Object.assign(state, {
+    playerName: '', playerAge: '', identity: null, member: null, pace: null,
+    week: 1, stage: '陌生人',
+    stats: { love: 8, pop: 0, mood: 72, money: 2300, secret: 100, company: 18, career: 67 },
+    conversationHistory: [],
+  });
+  document.getElementById('story-area').innerHTML = '';
+  document.getElementById('choices-grid').innerHTML = '';
+  showScreen('screen-title');
+}
+
+// Handle Enter key in inputs
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('custom-action').addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendCustomAction();
+  });
+  document.getElementById('api-key-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') saveApiKey();
+  });
+});
+</script>
+
+</body>
+</html>
